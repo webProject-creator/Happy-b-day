@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İyi Ki Doğdun! 🎂</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        /* Genel Sayfa Ayarları */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ffff8a, #fb7a1d);
+            font-family: "Cause", cursive;
+            overflow-x: hidden;
+            display: block;
+            text-align: center;
+            min-height: 100vh;
+        }
+
+        /* Giriş Ekranı ve Buton */
+        #intro-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #fb7a1d;
+            display: table;
+            z-index: 9999;
+            transition: opacity 1s ease;
+        }
+        .intro-cell {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .btn-surpriz {
+            padding: 15px 35px;
+            font-family: "Cause", cursive;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #420501;
+            background: linear-gradient(45deg, #fffc53, #46eaf3);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+            transition: transform 0.3s;
+        }
+        .btn-surpriz:hover {
+            transform: scale(1.1);
+        }
+
+        /* LED Işık Zinciri */
+        .led-zinciri {
+            display: none; 
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 10px 0;
+            z-index: 999;
+            text-align: center;
+        }
+        .led-ampul {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin: 0 15px;
+            animation: yan-son 1s infinite alternate;
+        }
+        .led-ampul:nth-child(3n+1) { background-color: #ff7b00; animation-delay: 0s; box-shadow: 0 0 15px #ff7b00; }
+        .led-ampul:nth-child(3n+2) { background-color: #00f2fe; animation-delay: 0.3s; box-shadow: 0 0 15px #00f2fe; }
+        .led-ampul:nth-child(3n+3) { background-color: #b624ff; animation-delay: 0.6s; box-shadow: 0 0 15px #b624ff; }
+
+        @keyframes yan-son {
+            0% { opacity: 0.3; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+        /* Ana İçerik ve Galeri Alanı */
+        .galeri-alani {
+            display: none;
+            margin-top: 80px;
+            padding-bottom: 50px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #fff;
+            text-shadow: 0 0 10px #00f2fe;
+            margin-bottom: 30px;
+        }
+
+        /* 3 Satırlı Yapıyı Oluşturan Düzen */
+        .fotograf-satiri {
+            display: block;
+            width: 100%;
+            margin: 20px auto;
+            text-align: center;
+            clear: both;
+        }
+
+        .polaroid-kart {
+            display: inline-block;
+            background-color: #fff;
+            padding: 15px 15px 30px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 250px;
+            margin: 20px;
+            vertical-align: top;
+            transition: transform 0.5s ease-in-out;
+            opacity: 0;
+            transform: translateY(50px);
+            text-align: left;
+        }
+
+        /* Fotoğrafların masaya dökülmüş gibi doğal durması için hafif eğim yönleri */
+        .satir-1 .polaroid-kart:nth-child(1) { transform: rotate(-3deg) translateY(50px); }
+        .satir-1 .polaroid-kart:nth-child(2) { transform: rotate(2deg) translateY(50px); }
+        .satir-1 .polaroid-kart:nth-child(3) { transform: rotate(-2deg) translateY(50px); }
+
+        .satir-2 .polaroid-kart:nth-child(1) { transform: rotate(4deg) translateY(50px); }
+        .satir-2 .polaroid-kart:nth-child(2) { transform: rotate(-3deg) translateY(50px); }
+        .satir-2 .polaroid-kart:nth-child(3) { transform: rotate(3deg) translateY(50px); }
+
+        .satir-3 .polaroid-kart:nth-child(1) { transform: rotate(-2deg) translateY(50px); }
+        .satir-3 .polaroid-kart:nth-child(2) { transform: rotate(4deg) translateY(50px); }
+        .satir-3 .polaroid-kart:nth-child(3) { transform: rotate(-4deg) translateY(50px); }
+
+        .satir-4 .polaroid-kart:nth-child(1) { transform: rotate(-3deg) translateY(50px); }
+        .satir-4 .polaroid-kart:nth-child(2) { transform: rotate(2deg) translateY(50px); }
+        .satir-4 .polaroid-kart:nth-child(3) { transform: rotate(-2deg) translateY(50px); }
+
+        .satir-5 .polaroid-kart:nth-child(1) { transform: rotate(-3deg) translateY(50px); }
+        .satir-5 .polaroid-kart:nth-child(2) { transform: rotate(2deg) translateY(50px); }
+        .satir-5 .polaroid-kart:nth-child(3) { transform: rotate(-2deg) translateY(50px); }
+
+
+
+        /* Animasyon tetiklendiğinde kartların duruşu */
+        .polaroid-kart.goster { opacity: 1; }
+        .satir-1 .polaroid-kart.goster:nth-child(1) { transform: translateY(0) rotate(-3deg) !important; }
+        .satir-1 .polaroid-kart.goster:nth-child(2) { transform: translateY(0) rotate(2deg) !important; }
+        .satir-1 .polaroid-kart.goster:nth-child(3) { transform: translateY(0) rotate(-2deg) !important; }
+        
+        .satir-2 .polaroid-kart.goster:nth-child(1) { transform: translateY(0) rotate(4deg) !important; }
+        .satir-2 .polaroid-kart.goster:nth-child(2) { transform: translateY(0) rotate(-3deg) !important; }
+        .satir-2 .polaroid-kart.goster:nth-child(3) { transform: translateY(0) rotate(3deg) !important; }
+
+        .satir-3 .polaroid-kart.goster:nth-child(1) { transform: translateY(0) rotate(-2deg) !important; }
+        .satir-3 .polaroid-kart.goster:nth-child(2) { transform: translateY(0) rotate(4deg) !important; }
+        .satir-3 .polaroid-kart.goster:nth-child(3) { transform: translateY(0) rotate(-4deg) !important; }
+
+        .satir-4 .polaroid-kart.goster:nth-child(1) { transform: translateY(0) rotate(-3deg) !important; }
+        .satir-4 .polaroid-kart.goster:nth-child(2) { transform: translateY(0) rotate(2deg) !important; }
+        .satir-4 .polaroid-kart.goster:nth-child(3) { transform: translateY(0) rotate(-2deg) !important; }
+        
+        .satir-5 .polaroid-kart.goster:nth-child(1) { transform: translateY(0) rotate(4deg) !important; }
+        .satir-5 .polaroid-kart.goster:nth-child(2) { transform: translateY(0) rotate(-3deg) !important; }
+        .satir-5 .polaroid-kart.goster:nth-child(3) { transform: translateY(0) rotate(3deg) !important; }
+
+        .satir-6 .polaroid-kart.goster:nth-child(1) { transform: translateY(0) rotate(-2deg) !important; }
+        .satir-6 .polaroid-kart.goster:nth-child(2) { transform: translateY(0) rotate(4deg) !important; }
+        .satir-6 .polaroid-kart.goster:nth-child(3) { transform: translateY(0) rotate(-4deg) !important; }
+
+        .satir-7 .polaroid-kart.goster:nth-child(1) { transform: translateY(0) rotate(-3deg) !important; }
+        .satir-7 .polaroid-kart.goster:nth-child(2) { transform: translateY(0) rotate(2deg) !important; }
+        .satir-7 .polaroid-kart.goster:nth-child(3) { transform: translateY(0) rotate(-2deg) !important; }
+
+        .polaroid-kart img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
+
+        .polaroid-not {
+            text-align: center;
+            font-family: "Cause", cursive;
+            font-weight: bold;
+            color: #333;
+            margin-top: 15px;
+            font-size: 1rem;
+        }
+        /* En Alttaki Kapanış Notu Tasarımı */
+        .kapanis-notu-alani {
+            margin: 50px auto 30px auto;
+            padding: 20px 25px;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .kapanis-notu {
+            color: #fff;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 500;
+            margin: 0;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+@media screen and (max-width: 768px) {
+    body {
+        /* dynamic island ve iOS alt barlarından taşmayı önler */
+        padding: 0 10px;
+    }
+
+    /* Dynamic Island (Çentik) alanından kaçmak için üst boşluğu artırıyoruz */
+    .led-zinciri {
+        padding-top: env(safe-area-inset-top, 20px); 
+    }
+    
+    .galeri-alani {
+        margin-top: calc(80px + env(safe-area-inset-top, 20px));
+    }
+
+    h1 {
+        font-size: 1.5rem; /* Telefon ekranı için başlığı biraz küçültüyoruz */
+        padding: 0 15px;
+    }
+
+    /* Mobil ekranda yan yana 3 fotoğraf sığmayacağı için 
+       satır mantığını iptal edip şık bir dikey akışa çeviriyoruz */
+    .fotograf-satiri {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+    }
+
+    .polaroid-kart {
+        width: 80%; /* Telefon ekran genişliğinin %80'ini kaplasın */
+        max-width: 280px;
+        margin: 15px 0;
+    }
+    .kapanis-notu-alani {
+        width: 90%;
+        margin: 40px auto 20px auto;
+    }
+
+    /* Mobilde fotoğrafların sağa sola çok fazla yamulup 
+       ekrandan taşmasını engellemek için eğimleri hafifletiyoruz */
+    /* Sola eğilecek olan polaroid kartlar (-2 derece) */
+    .satir-1 .polaroid-kart.goster:nth-child(1),
+    .satir-2 .polaroid-kart.goster:nth-child(2),
+    .satir-3 .polaroid-kart.goster:nth-child(3),
+    .satir-4 .polaroid-kart.goster:nth-child(1), /* 4. satırın 1. elemanı sola eğilsin */
+    .satir-5 .polaroid-kart.goster:nth-child(2),
+    .satir-6 .polaroid-kart.goster:nth-child(1),
+    .satir-7 .polaroid-kart.goster:nth-child(3) { /* 5. satırın 2. elemanı sola eğilsin */
+        transform: translateY(0) rotate(-2deg) !important; 
+    }
+    
+    /* Sağa eğilecek olan polaroid kartlar (2 derece) */
+    .satir-1 .polaroid-kart.goster:nth-child(2),
+    .satir-1 .polaroid-kart.goster:nth-child(3),
+    .satir-2 .polaroid-kart.goster:nth-child(1),
+    .satir-2 .polaroid-kart.goster:nth-child(3),
+    .satir-3 .polaroid-kart.goster:nth-child(1),
+    .satir-3 .polaroid-kart.goster:nth-child(2),
+    .satir-4 .polaroid-kart.goster:nth-child(2),
+    .satir-4 .polaroid-kart.goster:nth-child(3),
+    .satir-5 .polaroid-kart.goster:nth-child(1),
+    .satir-5 .polaroid-kart.goster:nth-child(3),
+    .satir-6 .polaroid-kart.goster:nth-child(2),
+    .satir-6 .polaroid-kart.goster:nth-child(3),
+    .satir-7 .polaroid-kart.goster:nth-child(1),
+    .satir-7 .polaroid-kart.goster:nth-child(3) {
+        transform: translateY(0) rotate(2deg) !important; 
+    }
+}
+    </style>
+</head>
+<body>
+
+    <audio id="arka-plan-muzik" src="https://www.youtube.com/watch?v=5Txz8JJroU0&list=RD5Txz8JJroU0&start_radio=1" loop></audio>
+
+    <div id="intro-overlay">
+        <div class="intro-cell">
+            <button class="btn-surpriz" onclick="surpriziBaslat()">Meloo buraya geellll! 🎈</button>
+        </div>
+    </div>
+
+    <div class="led-zinciri" id="ledler">
+        <div class="led-ampul"></div><div class="led-ampul"></div><div class="led-ampul"></div>
+        <div class="led-ampul"></div><div class="led-ampul"></div><div class="led-ampul"></div>
+        <div class="led-ampul"></div><div class="led-ampul"></div><div class="led-ampul"></div>
+    </div>
+
+    <div class="galeri-alani" id="galeri">
+        <h1 id="baslik">İyi ki doğdun MELOOOMMMM.. iyi ki varsıııın.. seni çook çoook seviyorumm.. 🎉</h1>
+        
+        <div class="fotograf-satiri satir-1">
+            <div class="polaroid-kart">
+                <img src="cizim.jpeg" alt="Anı 1">
+                <div class="polaroid-not">En sevdiğimmm en sevdiğiiiiimm..✨</div>
+            </div>
+            <div class="polaroid-kart">
+                <img src="ankara2.jpeg" alt="Anı 2">
+                <div class="polaroid-not">Bizimle olduğu için mutlu bir kedi!😂</div>
+            </div>
+            <div class="polaroid-kart">
+                <img src="ankara3.jpeg" alt="Anı 3">
+                <div class="polaroid-not">Bir Ankara hatırası ve tabikii harika bir hafta sonu..✨</div>
+            </div>
+        </div>
+
+        <div class="fotograf-satiri satir-2">
+            <div class="polaroid-kart">
+                <img src="istanbul2.jpeg" alt="Anı 4">
+                <div class="polaroid-not">Galerimizdeki enn "NE ALAKAA!" fotosu bu! Ya sapıklardı ya da bizi ünlü sandılar. Umarım 2. seçenektir. Ayrıca beşli selfie'miz kimdeyse bize gönderebilir mii?</div>
+            </div>
+            <div class="polaroid-kart">
+                <img src="istanbul2 (2).jpeg" alt="Anı 5">
+                <div class="polaroid-not">Akşam düğün var bize ne! Bizim keyfimiz yerindee dhjsd Büyükada ve Maltepe gezisii.. (Sadece bizim bildiğimiz detaylara bayılıyorumm.. <br>❤️❤️❤️) </div>
+            </div>
+            <div class="polaroid-kart">
+                <img src="ankara.jpeg" alt="Anı 11">
+                <div class="polaroid-not">Ankara planı - "Yağmur, çamur dinlemeden o sufle yenecek ve o sufleye giden yollarda da çok şey yenecek. Akşam da bi tiyatro yaparız sonra bi şeyler alıp evde yeriz.😂" </div>
+            </div>
+        </div>
+
+        <div class="fotograf-satiri satir-3">
+            <div class="polaroid-kart">
+                <img src="tokat1.jpeg" alt="Anı 7">
+                <div class="polaroid-not">Bir Ferhat ile Şirin değildik ama onları güneş gözlüğüyle anmak isteyebilecek iki kişiydik.. (Anaaa deldiği dağda burası mıymışş??😂)</div>
+            </div>
+            <div class="polaroid-kart">
+                <img src="tokat2.jpeg" alt="Anı 8">
+                <div class="polaroid-not">Tokat yollarında yemlik toplamacaa.. kertenkele görmece.. kene olmaması için dua etmeceli bir gün.😂</div>
+            </div>
+            <div class="polaroid-kart">
+                <img src="tokat3.jpeg" alt="Anı 9">
+                <div class="polaroid-not">Melo ve Hicoş bedava gezi etkinliğindeee.. aa pardonn! Bütçe dostu minnoş ekip Melo ve Hicoş sahnede.✨</div>
+            </div>
+        </div>
+        <div class="fotograf-satiri satir-4">
+            <div class="polaroid-kart">
+                <img src="dugunculuk.jpeg" alt="Anı 10">
+                <div class="polaroid-not">Çok güzel olduğumuzu söylemiş miydimm?❤️</div>
+            </div>
+              <div class="polaroid-kart">
+                <img src="istanbul1.jpeg" alt="Anı 11">
+                <div class="polaroid-not">Doğal ortamımızda sıradan bir pazar günü..😂 
+                </div>
+            </div>
+            <div class="polaroid-kart">
+                <img src="dugunculuk2.jpeg" alt="Anı 12">
+                <div class="polaroid-not">Düğün, kına, nişan etkinliklerinin vazgeçilmezleri..</div>
+            </div>
+        </div>
+        <div class="fotograf-satiri satir-5">
+            <div class="polaroid-kart">
+                <img src="kar.jpg" alt="Anı 20">
+                <div class="polaroid-not">Ağustos sıcağına bir kış fotosu yakışııırr ama bunu gören Meloo üşüyebiliirr..✨</div>
+            </div>
+            <!-- <div class="polaroid-kart">
+                <img src="workshop1.jpeg" alt="Anı 13">
+                <div class="polaroid-not">Ortaklığımızın ilk etkinliği.. iki saf olarak az kalsın kandırılıyorduk.. workshop'ta gözümüzü açan memur kıza saygılar..😂</div>
+            </div> -->
+             <div class="polaroid-kart">
+                <img src="aralik.jpeg" alt="Anı 14">
+                <div class="polaroid-not">En sevdiklerimdenn ve harika muhteşem günlerimizden biri dahaa diyebilirim..✨</div>
+            </div>
+            <div class="polaroid-kart">
+                <img src="esnaflık.jpg" alt="Anı 17">
+                <div class="polaroid-not">İçimizdeki esnaflığı ortaya çıkaran Mıymıntı 1'i saygı ve sevgiyle anıyorum..❤️</div>
+            </div>
+        </div>
+        <div class="fotograf-satiri satir-6">
+            <div class="polaroid-kart">
+                <img src="sivas1.jpeg" alt="Anı 16">
+                <div class="polaroid-not">Kimseyi sallamadan Sivasın tam merkezine kurulmuş bir masa ve bizim rahatlık.. unutulmaz günlerden biri dahaa 😂</div>
+            </div>
+              <div class="polaroid-kart">
+                <img src="acil.jpeg" alt="Anı 15">
+                <div class="polaroid-not">Sloganımız "Daha gezgin bir Melo için daha sağlam bir Meloo!!" Serum fobileri benimle kontrol altında sjhsj</div>
+            </div>
+            <div class="polaroid-kart">
+                <img src="turist.jpg" alt="Anı 18">
+                <div class="polaroid-not">Büyüdüğüm yeri sanki ilk defa görüyormuş gibi bir turist havasıyla sadece Meloyla gezebilirdim.. ❤️ </div>
+            </div>
+        </div>
+         <div class="fotograf-satiri satir-7">
+            <div class="polaroid-kart">
+                <img src="ortiii.jpg" alt="Anı 19">
+                <div class="polaroid-not">Ortaklığımızı pizza ile kutladığımız bir an.. arkada workshop devam ediyor ama biz ve tutamadığımız boğazımız biraz meşgulüz..❤️</div>
+            </div>
+              <div class="polaroid-kart">
+                <img src="workshop1.jpeg" alt="Anı 13">
+                <div class="polaroid-not">Ortaklığımızın ilk etkinliği.. iki saf olarak az kalsın kandırılıyorduk.. workshop'ta gözümüzü açan memur kıza saygılar..😂</div>
+            </div>
+             <!-- <div class="polaroid-kart">
+                <img src="kar.jpg" alt="Anı 20">
+                <div class="polaroid-not">Ağustos sıcağına bir kış fotosu yakışııırr ama bunu gören Meloo üşüyebiliirr.. ✨</div>
+            </div> -->
+            <div class="polaroid-kart">
+                <img src="yiyengiller.jpg" alt="Anı 21">
+                <div class="polaroid-not">Bizi birbirimize bağlayan şey sevgi, saygı ve tabii ki pinterest sofraları.. dostluğumuzun vazgeçilmez üçlüsü..❤️ </div>
+            </div>
+        </div>
+        <!-- EN ALTTAKİ TATLI KAPANIŞ NOTU -->
+        <div class="kapanis-notu-alani">
+            <p class="kapanis-notu">
+                İyi ki doğdun canımm dostumm.. iyi ki tanıdım seni. Her anımız ayrı güzel her anımız ayrı eğlenceli. Daha nice nice saçmalayışlaraa.. beraberken ağlanacak her halimize gülerek meydan okuyoruz. Neden? Çünkü bu Melo etkisiiii.. Herkesin hayatına bir Melo diliyorummmm.✨🤍
+            </p>
+        </div>
+    </div>
+    
+
+
+    <!-- 1. HEAD etiketlerinin içine (HTML'in üst kısmına) eklediğinden emin ol: -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<!-- 2. Sayfanın en altındaki SCRIPT alanın: -->
+<script>
+    function surpriziBaslat() {
+        // Giriş ekranını kaldır
+        const overlay = document.getElementById('intro-overlay');
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 1000);
+        }
+
+        // Müziği oynat
+        const muzik = document.getElementById('arka-plan-muzik');
+        if (muzik) {
+            muzik.play().catch(error => console.log("Müzik çalınamadı.", error));
+        }
+
+        // Öğeleri göster (Senin orijinal ID yapın)
+        const ledler = document.getElementById('ledler');
+        const galeri = document.getElementById('galeri');
+        
+        if (ledler) ledler.style.display = 'block';
+        if (galeri) galeri.style.display = 'block';
+
+        // --- KONFETİ EFEKTİ (Hata korumalı) ---
+        if (typeof confetti === 'function') {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        // Polaroid kartları sırayla ekrana düşür
+        const kartlar = document.querySelectorAll('.polaroid-kart');
+        kartlar.forEach((kart, index) => {
+            setTimeout(() => {
+                kart.classList.add('goster');
+            }, (index + 1) * 300);
+        });
+    }
+</script>
+    <!-- <script>
+        
+        
+        function surpriziBaslat() {
+            // Giriş ekranını kaldır
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 1000);
+
+            // Müziği oynat
+            const muzik = document.getElementById('arka-plan-muzik');
+            muzik.play().catch(error => console.log("Müzik çalınamadı.", error));
+
+            // Öğeleri göster
+            document.getElementById('ledler').style.display = 'block';
+            document.getElementById('galeri').style.display = 'block';
+
+            // Polaroid kartları sırayla şık bir efektle ekrana düşür
+            const kartlar = document.querySelectorAll('.polaroid-kart');
+            kartlar.forEach((kart, index) => {
+                setTimeout(() => {
+                    kart.classList.add('goster');
+                }, (index + 1) * 300); // 0.3 saniyede bir sırayla ekrana düşerler
+            });
+        }
+
+        
+    </script> -->
+</body>
+</html>
